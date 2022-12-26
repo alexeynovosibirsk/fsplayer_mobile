@@ -5,14 +5,12 @@ import android.os.Environment;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ListStations {
-
-    private List<String> genres = new ArrayList<>(
-            Arrays.asList("synth", "trance", "jazz", "easy", "dance", "ambient"));
 
     private int numberListByGenre = 0;
     private int stationNumber = 0;
@@ -22,7 +20,6 @@ public class ListStations {
             File dir = new File(String.valueOf(Environment.getExternalStoragePublicDirectory(
             Environment.DIRECTORY_DOWNLOADS + "/playlists")));
     public List<List<Station>> listByGenre = new ArrayList<>();
-
 
     public void increaseStationsListNumber() {
         numberListByGenre++;
@@ -68,14 +65,18 @@ public class ListStations {
 
     public void fillListStations() {
         toZeroStationNumber();
-        for(String genre : genres) {
-            File fileWithPath = new File(dir + "/" + genre + ".txt");
-            if (fileWithPath.exists()) {
-                List<Station> listGenre = fileToPlaylist(fileWithPath, genre);
+
+            List<String> txtFileList = Stream.of(dir.listFiles())
+                    .filter(file -> file.getName().endsWith(".txt"))
+                    .map(File::getName)
+                    .collect(Collectors.toList());
+
+            for(String s : txtFileList) {
+                File fileWithPath = new File(dir + "/" + s);
+                List<Station> listGenre = fileToPlaylist(fileWithPath, s.replace(".txt", ""));
                 isFillStations = true;
                 listByGenre.add(listGenre);
             }
-        }
     }
 
     public List<Station> fileToPlaylist(File fileWithPath, String fileName) {

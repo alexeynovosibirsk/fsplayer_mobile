@@ -1,17 +1,14 @@
 package ru.nazarov.fsplayer;
 
 import android.Manifest;
-import android.app.DownloadManager;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
 import android.provider.Settings;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -42,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Utils.onActivityCreateSetTheme(this);
         setContentView(R.layout.activity_main);
 // Handle with SELinux
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
@@ -62,12 +60,15 @@ public class MainActivity extends AppCompatActivity {
         if(ls.isFillStations) {
             play();
         }
-
         ImageButton updatePlaylists = findViewById(R.id.update_playlists);
         updatePlaylists.setOnClickListener(view -> {
             updatePlaylists();
-//            textView.setText(getTime());
         });
+
+//        ImageButton themeChangerBtn = findViewById(R.id.theme_changer);
+//        themeChangerBtn.setOnClickListener(view -> {
+//                Utils.changeToTheme(MainActivity.this, 1);
+//        });
 
         ImageButton genre = findViewById(R.id.genre);
         genre.setOnClickListener(view -> {
@@ -84,7 +85,6 @@ public class MainActivity extends AppCompatActivity {
 
         ImageButton prevStation = findViewById(R.id.prev_station);
         prevStation.setOnClickListener(view -> {
-        //    new DownloadFromURL().execute("https://github.com/alexeynovosibirsk/Files_RadioPlayerPlaylists/blob/master/trance.txt");
             ls.decreaseStationNumber();
              play();
         });
@@ -128,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
        ls.fillListStations();
        if (ls.getIsFillStations()) {
 //           String time = c.getTime().toString().replace("GMT", "");
-           textView.setText("LISTS UPDATED AT: " + getTime());
+           textView.setText("Updated at: " + getTime());
        } else {
            textView.setText("The Playlists are not downloaded! ");
        }
@@ -144,8 +144,9 @@ public class MainActivity extends AppCompatActivity {
         stationName = findViewById(R.id.textView3);
         url = findViewById(R.id.textView4);
         Station station = ls.getStation();
-        genre.setText("Genre: " + station.getGenre().toUpperCase() + " >> " + ls.getStationNumber()
-                + "/" +        ls.getStationListSize());
+        genre.setText(ls.getStationListSize() + "  - " + station.getGenre().toUpperCase() +
+                        " -  " + ls.getStationNumber()
+                       );
         stationName.setText("Station: " + station.getName());
         url.setText("Url: " + station.getUrl());
     }
@@ -172,7 +173,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
 class DownloadFromURL extends AsyncTask<String, String, String> {
-
 
     @Override
     protected String doInBackground(String... fileUrl) {
