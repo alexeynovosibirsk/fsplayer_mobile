@@ -17,6 +17,8 @@ public class ListStations {
     public boolean isFillStations = false;
     private int stationListSize = 0;
 
+
+
             File dir = new File(String.valueOf(Environment.getExternalStoragePublicDirectory(
             Environment.DIRECTORY_DOWNLOADS + "/playlists")));
     public List<List<Station>> listByGenre = new ArrayList<>();
@@ -24,6 +26,12 @@ public class ListStations {
     public void increaseStationsListNumber() {
         numberListByGenre++;
         numberListByGenre = checkSize(numberListByGenre, listByGenre.size());
+    }
+    public void decreaseStationsListNumber() {
+        if(numberListByGenre == 0) {
+            numberListByGenre = listByGenre.size() - 1;
+        }
+        numberListByGenre--;
     }
     public void increaseStationNumber() {
         stationNumber++;
@@ -46,6 +54,20 @@ public class ListStations {
         return arrayIndex;
     }
 
+    public int getPlaylistsAmount() {
+        int amount = 0;
+        amount = listByGenre.size();
+        return amount;
+    }
+
+    public int getStationsAmount() {
+        int amount = 0;
+        for(int i = 0; i < listByGenre.size(); i++) {
+            amount += listByGenre.get(i).size();
+        }
+        return amount;
+    }
+
     public Station getStation() {
         stationListSize = listByGenre.get(numberListByGenre).size();
         return listByGenre.get(numberListByGenre).get(stationNumber);
@@ -66,6 +88,9 @@ public class ListStations {
     public void fillListStations() {
         toZeroStationNumber();
 
+        if(dir.exists()) {
+            listByGenre.clear();
+
             List<String> txtFileList = Stream.of(dir.listFiles())
                     .filter(file -> file.getName().endsWith(".txt"))
                     .map(File::getName)
@@ -77,6 +102,7 @@ public class ListStations {
                 isFillStations = true;
                 listByGenre.add(listGenre);
             }
+        }
     }
 
     public List<Station> fileToPlaylist(File fileWithPath, String fileName) {

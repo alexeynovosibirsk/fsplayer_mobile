@@ -1,6 +1,8 @@
 package ru.nazarov.fsplayer;
 
 import android.Manifest;
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
@@ -9,6 +11,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
 import android.provider.Settings;
+import android.util.Log;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -35,6 +38,8 @@ public class MainActivity extends AppCompatActivity {
     TextView genre;
     TextView stationName;
     TextView url;
+    TextView amount;
+    TextView stationsAmount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,14 +58,27 @@ public class MainActivity extends AppCompatActivity {
                     {permission}, 123);
         }
 
-        askForPermissions();
+//        askForPermissions();
+// TextViews links
         player = new ExoPlayer.Builder(this).build();
-        textView = findViewById(R.id.textView);
+        amount = findViewById(R.id.playlistamountTextView);
+        stationsAmount = findViewById(R.id.stationsamountTextView);
+        textView = findViewById(R.id.statusTextView);
         updatePlaylists();
         if(ls.isFillStations) {
             play();
         }
-        ImageButton updatePlaylists = findViewById(R.id.update_playlists);
+        // TODO: FInd if I need to use the notification? Make app in foreground
+//        Notification notification = new Notification(R.drawable.icon, getText(R.string.ticker_text),
+//                System.currentTimeMillis());
+        Intent notificationIntent = new Intent(this, MainActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(
+                this, 0, notificationIntent, 0);
+//        notification.setLatestEventInfo(this, getText(R.string.notification_title),
+//                getText(R.string.notification_message), pendingIntent);
+//        startForeground(ONGOING_NOTIFICATION_ID, notification);
+        //-----------------
+        ImageButton updatePlaylists = findViewById(R.id.update_playlistsButton);
         updatePlaylists.setOnClickListener(view -> {
             updatePlaylists();
         });
@@ -70,20 +88,27 @@ public class MainActivity extends AppCompatActivity {
 //                Utils.changeToTheme(MainActivity.this, 1);
 //        });
 
-        ImageButton genre = findViewById(R.id.genre);
+        ImageButton genre = findViewById(R.id.genreButton);
         genre.setOnClickListener(view -> {
                 ls.increaseStationsListNumber();
                 ls.toZeroStationNumber();
                 play();
         });
 
-        ImageButton nextStation = findViewById(R.id.next_station);
+        ImageButton genreBack = findViewById(R.id.genreButtonBack);
+        genreBack.setOnClickListener(view -> {
+            ls.decreaseStationsListNumber();
+            ls.toZeroStationNumber();
+            play();
+        });
+
+        ImageButton nextStation = findViewById(R.id.next_stationButton);
         nextStation.setOnClickListener(view -> {
                 ls.increaseStationNumber();
                 play();
         });
 
-        ImageButton prevStation = findViewById(R.id.prev_station);
+        ImageButton prevStation = findViewById(R.id.prev_stationButton);
         prevStation.setOnClickListener(view -> {
             ls.decreaseStationNumber();
              play();
@@ -95,7 +120,6 @@ public class MainActivity extends AppCompatActivity {
             MediaItem item = new MediaItem.Builder()
                     .setUri(ls.getStation().getUrl())
                     .build();
-
             player.setMediaItem(item);
             player.prepare();
             player.play();
@@ -128,7 +152,9 @@ public class MainActivity extends AppCompatActivity {
        ls.fillListStations();
        if (ls.getIsFillStations()) {
 //           String time = c.getTime().toString().replace("GMT", "");
-           textView.setText("Updated at: " + getTime());
+           amount.setText("Playlists: " + ls.getPlaylistsAmount());
+           stationsAmount.setText("Stations: " + ls.getStationsAmount());
+           textView.setText("at: " + getTime());
        } else {
            textView.setText("The Playlists are not downloaded! ");
        }
@@ -140,16 +166,16 @@ public class MainActivity extends AppCompatActivity {
    }
 
     private void stationInfo() {
-        genre = findViewById(R.id.textView2);
-        stationName = findViewById(R.id.textView3);
-        url = findViewById(R.id.textView4);
+        genre = findViewById(R.id.genreTextView);
+        stationName = findViewById(R.id.stationTextView);
+        url = findViewById(R.id.urlTextView);
         Station station = ls.getStation();
         genre.setText(ls.getStationListSize() + "  - " + station.getGenre().toUpperCase() +
-                        " -  " + ls.getStationNumber()
-                       );
+                        " -  " + ls.getStationNumber());
         stationName.setText("Station: " + station.getName());
         url.setText("Url: " + station.getUrl());
     }
+
     private void releaseResources() {
         if (player != null) {
             if (player.isPlaying()) {
